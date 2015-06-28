@@ -6,23 +6,34 @@ unless ENV['S3_BUCKET']
 end
 
 DIRECTION = ENV['DIRECTION'] || 'BI'
-SLEEP_SECONDS = ENV['SLEEP_SECONDS'] || 1800
+SLEEP_SECONDS = ENV['SLEEP_SECONDS'] || 30
+EXCLUDE_DIRS = ENV['EXCLUDE_DIRS'] || ""
+
+exclude_list = ""
 
 def get_ts
   Time.now.utc.to_s
 end
 
+EXCLUDE_DIRS.split(",").each do |exclude|
+  exclude_list += " --exclude \"*#{exclude}/*\""
+end
+
 loop do
   start = Time.now
   
+  puts "#{get_ts} starting sync"
+  
   if DIRECTION.eql?("BI") or DIRECTION.eql?("UP")
-    puts "#{get_ts} starting sync"
-    puts `aws s3 sync /sync s3://#{ENV['S3_BUCKET']}`
+    puts `aws s3 sync #{exclude_list} /sync s3://#{ENV['S3_BUCKET']}`
     puts "#{get_ts} finished upload, took #{Time.now - start}"
-  elsif DIRECTION.eql?("BI") or DIRECTION.eql?("DN")
-    puts `aws s3 sync s3://#{ENV['S3_BUCKET']} /sync`
-    puts "#{get_ts} finished sync, took #{Time.now - start}"
   end
+  
+  if DIRECTION.eql?("BI") or DIRECTION.eql?("DN")
+    puts `aws s3 sync #{exclude_list} s3://#{ENV['S3_BUCKET']} /sync`
+  end
+  
+  puts "#{get_ts} finished sync, took #{Time.now - start}"
   
   sleep SLEEP_SECONDS
 end
