@@ -17,7 +17,6 @@ def get_ts
   Time.now.utc.to_s
 end
 
-
 EXCLUDE_DIRS.split(",").each do |exclude|
   exclude_list += " --exclude \"*#{exclude}/*\""
 end
