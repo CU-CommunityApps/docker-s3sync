@@ -8,8 +8,10 @@ end
 DIRECTION = ENV['DIRECTION'] || 'BI'
 SLEEP_SECONDS = ENV['SLEEP_SECONDS'] || 30
 EXCLUDE_DIRS = ENV['EXCLUDE_DIRS'] || ""
+EXCLUDE_FILES = ENV['EXCLUDE_FILES'] || ""
 
-exclude_list = ""
+exclude_dir_list = ""
+exclude_file_list = ""
 
 def get_ts
   Time.now.utc.to_s
@@ -17,6 +19,10 @@ end
 
 EXCLUDE_DIRS.split(",").each do |exclude|
   exclude_list += " --exclude \"*#{exclude}/*\""
+end
+
+EXCLUDE_FILES.split(",").each do |exclude|
+  exclude_list += " --exclude \"#{exclude}\""
 end
 
 loop do
