@@ -10,8 +10,7 @@ SLEEP_SECONDS = ENV['SLEEP_SECONDS'] || 30
 EXCLUDE_DIRS = ENV['EXCLUDE_DIRS'] || ""
 EXCLUDE_FILES = ENV['EXCLUDE_FILES'] || ""
 
-exclude_dir_list = ""
-exclude_file_list = ""
+exclude_list = ""
 
 def get_ts
   Time.now.utc.to_s
