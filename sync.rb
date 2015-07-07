@@ -25,17 +25,20 @@ EXCLUDE_FILES.split(",").each do |exclude|
 end
 
 puts "#{exclude_list}"
+
 loop do
   start = Time.now
   
   puts "#{get_ts} starting sync"
   
   if DIRECTION.eql?("BI") or DIRECTION.eql?("UP")
+    puts "#{get_ts} aws s3 sync #{exclude_list} /sync s3://#{ENV['S3_BUCKET']}"
     puts `aws s3 sync #{exclude_list} /sync s3://#{ENV['S3_BUCKET']}`
     puts "#{get_ts} finished upload, took #{Time.now - start}"
   end
   
   if DIRECTION.eql?("BI") or DIRECTION.eql?("DN")
+    puts "#{get_ts} aws s3 sync #{exclude_list} s3://#{ENV['S3_BUCKET']} /sync"
     puts `aws s3 sync #{exclude_list} s3://#{ENV['S3_BUCKET']} /sync`
   end
   
