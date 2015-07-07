@@ -24,6 +24,7 @@ EXCLUDE_FILES.split(",").each do |exclude|
   exclude_list += " --exclude \"#{exclude}\""
 end
 
+puts "#{exclude_list}"
 loop do
   start = Time.now
   
