@@ -5,42 +5,56 @@ unless ENV['S3_BUCKET']
   exit 1
 end
 
-DIRECTION = ENV['DIRECTION'] || 'BI'
+DIRECTION = ENV['DIRECTION'] || 'UP'
 SLEEP_SECONDS = ENV['SLEEP_SECONDS'] || 30
 EXCLUDE_DIRS = ENV['EXCLUDE_DIRS'] || ""
 EXCLUDE_FILES = ENV['EXCLUDE_FILES'] || ""
 
-exclude_list = ""
+$exclude_list = ""
+EXCLUDE_DIRS.split(",").each do |exclude|
+  $exclude_list += " --exclude \"*#{exclude}/*\""
+end
+
+EXCLUDE_FILES.split(",").each do |exclude|
+  $exclude_list += " --exclude \"#{exclude}\""
+end
 
 def get_ts
   Time.now.utc.to_s
 end
 
-EXCLUDE_DIRS.split(",").each do |exclude|
-  exclude_list += " --exclude \"*#{exclude}/*\""
+def up_sync
+  puts `aws s3 sync #{$exclude_list} /sync s3://#{ENV['S3_BUCKET']}`
 end
 
-EXCLUDE_FILES.split(",").each do |exclude|
-  exclude_list += " --exclude \"#{exclude}\""
+def dn_sync
+  puts `aws s3 sync #{$exclude_list} s3://#{ENV['S3_BUCKET']} /sync`
 end
+
+def sync
+  start = Time.now
+  puts "#{get_ts} starting sync"
+  yield
+  puts "#{get_ts} finished sync, took #{Time.now - start}"
+end
+
+  
+# run an initial down sync.
+puts "#{get_ts} starting initial down sync"
+2.times do
+  sync {dn_sync}
+end
+puts "#{get_ts} finished initial down sync"
 
 loop do
-  start = Time.now
   
-  puts "#{get_ts} starting sync"
-  
-  if DIRECTION.eql?("BI") or DIRECTION.eql?("UP")
-    puts "#{get_ts} aws s3 sync #{exclude_list} /sync s3://#{ENV['S3_BUCKET']}"
-    puts `aws s3 sync #{exclude_list} /sync s3://#{ENV['S3_BUCKET']}`
-    puts "#{get_ts} finished upload, took #{Time.now - start}"
+  if DIRECTION.eql?("UP")
+    sync {up_sync}
   end
   
-  if DIRECTION.eql?("BI") or DIRECTION.eql?("DN")
-    puts "#{get_ts} aws s3 sync #{exclude_list} s3://#{ENV['S3_BUCKET']} /sync"
-    puts `aws s3 sync #{exclude_list} s3://#{ENV['S3_BUCKET']} /sync`
+  if DIRECTION.eql?("DN")
+    sync {dn_sync}
   end
-  
-  puts "#{get_ts} finished sync, took #{Time.now - start}"
   
   sleep SLEEP_SECONDS
 end
