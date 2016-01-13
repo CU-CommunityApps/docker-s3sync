@@ -1,14 +1,15 @@
-#!/usr/bin/ruby 
+#!/usr/bin/ruby
 
-unless ENV['S3_BUCKET'] 
+unless ENV['S3_BUCKET']
   puts "The environment variable S3_BUCKET has to be set"
   exit 1
 end
 
 DIRECTION = ENV['DIRECTION'] || 'UP'
-SLEEP_SECONDS = ENV['SLEEP_SECONDS'] || 30
+SLEEP_SECONDS = ENV['SLEEP_SECONDS'].to_i || 30
 EXCLUDE_DIRS = ENV['EXCLUDE_DIRS'] || ""
 EXCLUDE_FILES = ENV['EXCLUDE_FILES'] || ""
+SKIP_INITIAL_DOWN = ENV['SKIP_INITIAL_DOWN'] || ""
 
 $exclude_list = ""
 EXCLUDE_DIRS.split(",").each do |exclude|
@@ -38,23 +39,24 @@ def sync
   puts "#{get_ts} finished sync, took #{Time.now - start}"
 end
 
-  
-# run an initial down sync.
-puts "#{get_ts} starting initial down sync"
-2.times do
-  sync {dn_sync}
+unless SKIP_INITIAL_DOWN
+  # run an initial down sync.
+  puts "#{get_ts} starting initial down sync"
+  2.times do
+    sync {dn_sync}
+  end
+  puts "#{get_ts} finished initial down sync"
 end
-puts "#{get_ts} finished initial down sync"
 
 loop do
-  
+
   if DIRECTION.eql?("UP")
     sync {up_sync}
   end
-  
+
   if DIRECTION.eql?("DN")
     sync {dn_sync}
   end
-  
+
   sleep SLEEP_SECONDS
 end
