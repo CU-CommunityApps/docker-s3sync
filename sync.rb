@@ -10,6 +10,7 @@ SLEEP_SECONDS = ENV['SLEEP_SECONDS'].to_i || 30
 EXCLUDE_DIRS = ENV['EXCLUDE_DIRS'] || ""
 EXCLUDE_FILES = ENV['EXCLUDE_FILES'] || ""
 SKIP_INITIAL_DOWN = ENV['SKIP_INITIAL_DOWN'] || nil
+ONCE = ENV['ONCE'] || nil
 
 $exclude_list = ""
 EXCLUDE_DIRS.split(",").each do |exclude|
@@ -57,6 +58,10 @@ loop do
   if DIRECTION.eql?("DN")
     sync {dn_sync}
   end
-
+  
+  if (ONCE)
+    break
+  end
+  
   sleep SLEEP_SECONDS
 end
